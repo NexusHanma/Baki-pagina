@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Carrito - Baki Hanma</title>
+    
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* TUS FUENTES LOCALES */
+        @font-face { font-family: 'MiFuenteBaki'; src: url('fonts/Baki-Font.ttf'); }
+        @font-face { font-family: 'Legionary'; src: url('Tipografia/Legionary.ttf'); }
+
+        /* === 1. ESTILOS GLOBALES Y FOOTER FIJO === */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden !important;
+        }
+
+        body { 
+            background-image: url('img/fondo-baki.png'); 
+            background-size: cover; 
+            background-position: center center; 
+            background-attachment: fixed; 
+            background-color: #050505; 
+            font-family: 'Arial Black', Impact, sans-serif; 
+            color: white; 
+            /* 🔥 SOLUCIÓN DEL FOOTER FLOTANTE 🔥 */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1; /* Obliga al main a ocupar el espacio vacío empujando el footer */
+            width: 100%;
+        }
+        
+        .contenedor-central { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 5;}
+        header { padding-top: 30px; } 
+
+        /* === 2. PILARES Y NAV === */
+        .pilar-izq { position: fixed; top: 0; left: 0; height: 100vh; width: 200px; background-image: url('img/pilar-izq.png'); background-size: cover; z-index: -1; }
+        .pilar-der { position: fixed; top: 0; right: 0; height: 100vh; width: 200px; background-image: url('img/pilar-der.png'); background-size: cover; z-index: -1; }
+
+        .barra-roja { background-color: #000000; display: flex; justify-content: center; align-items: center; height: 45px; border-top: 2px solid white; border-bottom: 2px solid white; position: relative; z-index: 100; }
+        .caja-logo { position: absolute; left: 10px; top: -25px; width: 100px; height: 80px; display: flex; align-items: center; justify-content: center; }
+        .caja-logo img { max-width: 90%; height: auto; border: 0; }
+        
+        nav ul { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; align-items: center; }
+        nav ul li a { text-decoration: none; color: white; font-size: 20px; text-transform: uppercase; font-family: 'Oswald', sans-serif; font-weight: 500; transition: color 0.3s ease; }
+        nav ul li a:hover { color: #e31b23; }
+        nav ul li:not(:last-child):after { content: "|"; color: white; margin-left: 20px; font-size: 20px; }
+        
+        .caja-iconos { position: absolute; right: 20px; display: flex; gap: 15px; align-items: center; }
+        .caja-iconos img { width: 25px; height: 25px; cursor: pointer; border: 0; }
+
+        .carrito-contenedor { position: relative; display: flex; align-items: center; justify-content: center; }
+        .contador-carrito { position: absolute; top: -8px; right: -8px; background-color: #e31b23; color: white; font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid white; opacity: 0; transition: all 0.3s ease; transform: scale(0.5); pointer-events: none; }
+        .contador-carrito.visible { opacity: 1; transform: scale(1); }
+
+        .titulo-seccion { display: flex; align-items: center; justify-content: center; margin: 40px 0; position: relative; width: 100%; }
+        /* 🔥 AQUÍ ESTÁ LA FUENTE OSWALD DEL TÍTULO 🔥 */
+        .titulo-seccion h1 { font-family: 'Oswald', sans-serif; font-size: 50px; text-transform: uppercase; display: inline-block; color: white; background: none; padding: 0 30px; margin: 0; position: relative; z-index: 2; }
+        .titulo-seccion::before, .titulo-seccion::after { content: ""; flex: 1; height: 4px; background-color: #e31b23; border-radius: 2px; }
+
+        /* === ESTILOS DEL CARRITO === */
+        .layout-carrito { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 60px; }
+        .lista-productos { background-color: rgba(0, 0, 0, 0.85); border: 2px solid #333; border-radius: 10px; padding: 20px; min-height: 200px; }
+        .carrito-vacio { text-align: center; color: #888; font-family: 'Oswald', sans-serif; font-size: 24px; text-transform: uppercase; padding: 40px 0; }
+
+        .item-carrito { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #444; transition: opacity 0.4s ease, transform 0.4s ease; }
+        .item-carrito:last-child { border-bottom: none; }
+
+        .item-info { display: flex; align-items: center; gap: 20px; width: 60%; }
+        .item-img-contenedor { width: 80px; height: 80px; background-color: #111; border-radius: 5px; display: flex; justify-content: center; align-items: center; border: 1px solid #444; }
+        .item-img-contenedor img { width: 80%; height: 80%; object-fit: contain; }
+
+        /* 🔥 FUENTES CORREGIDAS PARA LOS NOMBRES DE PRODUCTOS 🔥 */
+        .item-detalles h3 { font-family: 'Oswald', sans-serif; font-size: 22px; color: white; text-transform: uppercase; margin-bottom: 5px; }
+        .item-detalles p { font-family: 'Arial', sans-serif; color: #aaa; font-size: 14px; }
+        .item-precio { font-family: 'Arial', sans-serif; font-size: 20px; color: #84d2bd; font-weight: bold; width: 20%; text-align: right; }
+
+        .btn-eliminar { background: transparent; color: #555; border: none; font-size: 24px; cursor: pointer; transition: color 0.3s ease; width: 10%; text-align: right; }
+        .btn-eliminar:hover { color: #e31b23; }
+
+        .resumen-orden { background-color: rgba(0, 0, 0, 0.85); border: 2px solid #e31b23; border-radius: 10px; padding: 30px 20px; height: fit-content; position: sticky; top: 20px; }
+        /* 🔥 FUENTES CORREGIDAS DEL RESUMEN 🔥 */
+        .resumen-orden h2 { font-family: 'Oswald', sans-serif; font-size: 28px; color: white; text-transform: uppercase; margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        .resumen-fila { display: flex; justify-content: space-between; margin-bottom: 15px; font-family: 'Arial', sans-serif; font-size: 16px; color: #ccc; }
+        .resumen-total { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; border-top: 1px solid #444; font-family: 'Oswald', sans-serif; font-size: 26px; color: white; text-transform: uppercase; }
+        .total-valor { color: #84d2bd; }
+
+        .btn-pagar { width: 100%; background-color: #e31b23; color: white; border: none; padding: 15px; margin-top: 25px; font-family: 'Oswald', sans-serif; font-size: 20px; text-transform: uppercase; cursor: pointer; transition: background 0.3s ease; border-radius: 5px; }
+        .btn-pagar:hover { background-color: white; color: #e31b23; font-weight: bold; }
+
+       /* === 🔥 MODAL PAGO VIP 🔥 === */
+        .modal-fondo { 
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); 
+            z-index: 1000; justify-content: center; align-items: center; 
+        }
+
+        .modal-contenido { 
+            background: linear-gradient(145deg, #111111, #050505); /* Degradado premium */
+            border: 1px solid #333; 
+            border-top: 5px solid #e31b23; /* Solo el borde superior rojo */
+            border-radius: 12px; 
+            padding: 40px 50px; 
+            text-align: center; 
+            max-width: 450px; 
+            box-shadow: 0 15px 50px rgba(0,0,0,0.8), 0 0 20px rgba(227, 27, 35, 0.2); 
+            animation: zoomIn 0.3s ease-out; 
+        }
+
+        @keyframes zoomIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .icono-exito {
+            width: 70px; height: 70px; background-color: #e31b23; color: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 35px; font-weight: bold;
+            margin: 0 auto 20px auto; box-shadow: 0 0 15px rgba(227, 27, 35, 0.5);
+        }
+
+        .modal-contenido h2 { font-family: 'Oswald', sans-serif; font-size: 36px; color: white; text-transform: uppercase; margin-bottom: 10px; }
+        .modal-contenido p { font-family: 'Arial', sans-serif; font-size: 15px; color: #aaa; margin-bottom: 25px; line-height: 1.5; }
+        
+        .modal-detalles-orden {
+            background-color: #0a0a0a; border: 1px solid #222; border-radius: 8px; padding: 15px;
+            margin-bottom: 30px; text-align: left;
+        }
+        
+        .detalle-fila { display: flex; justify-content: space-between; font-family: 'Arial', sans-serif; font-size: 14px; margin-bottom: 8px; color: #888; text-transform: uppercase; }
+        .detalle-fila:last-child { margin-bottom: 0; }
+
+        .btn-seguir-comprando { 
+            background-color: #e31b23; color: white; border: none; padding: 15px 0; width: 100%; border-radius: 6px;
+            font-family: 'Oswald', sans-serif; font-size: 18px; text-transform: uppercase; cursor: pointer; 
+            transition: all 0.3s ease; text-decoration: none; display: inline-block; letter-spacing: 1px;
+        }
+        .btn-seguir-comprando:hover { background-color: white; color: #e31b23; font-weight: bold; box-shadow: 0 5px 15px rgba(227, 27, 35, 0.3); }
+
+        /* =======================================================
+           🥊 MODO CELULAR (FÓRMULA MAESTRA APLICADA) 🥊
+           ======================================================= */
+        @media (max-width: 900px) { .layout-carrito { grid-template-columns: 1fr; } .pilar-izq, .pilar-der { display: none; } }
+        
+        @media (max-width: 768px) { 
+            .pilar-izq, .pilar-der { display: none; } 
+            
+            /* === NAVEGACIÓN MÓVIL EXACTA (TAMAÑO PERSONAJES) === */
+            .barra-roja { flex-direction: column; height: auto; padding: 8px 0; gap: 5px; }
+            .caja-logo { position: relative; top: 0; left: 0; height: auto; margin-bottom: 2px;}
+            .caja-logo img { width: 60px; height: auto; } 
+            nav ul { flex-wrap: wrap; justify-content: center; gap: 2px 15px; padding: 0 5px; }
+            nav ul li a { font-size: 12px; background-color: transparent; padding: 2px 0; border: none; display: inline-block; letter-spacing: 0.5px; color: #ddd; }
+            nav ul li:not(:last-child):after { display: none; }
+            .caja-iconos { position: relative; right: 0; margin-top: 2px; gap: 20px; }
+            .caja-iconos img { width: 22px; height: 22px; }
+            
+            /* Iconos Centrados Abajo del menú */
+            .caja-iconos { position: relative; right: auto; margin-top: 5px; gap: 20px; justify-content: center; width: 100%; }
+            
+            /* Ajustes Carrito Móvil */
+            .titulo-seccion h1 { font-size: 35px; }
+            .item-carrito { flex-direction: column; align-items: flex-start; gap: 15px; position: relative; }
+            .item-info { width: 100%; }
+            .item-precio { width: 100%; text-align: left; }
+            .btn-eliminar { position: absolute; top: 10px; right: 0; width: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pilar-izq"></div>
+    <div class="pilar-der"></div>
+
+    <header>
+        <div class="contenedor-central">
+            <div class="barra-roja">
+                <div class="caja-logo"><img src="img/logo.png" alt="Logo"></div> 
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="personajes.html">Personajes</a></li>
+                        <li><a href="historia.html">Historia</a></li>
+                        <li><a href="mercancia.html">Mercancía</a></li>
+                        <li><a href="Peleas.html">Peleas Memorables</a></li>
+                    </ul>
+                </nav>
+                <div class="caja-iconos">
+                    <a href="perfil.html"><img src="img/icono-perfil.png" alt="Perfil"></a>
+                    <div class="carrito-contenedor">
+                        <img src="img/icono-carrito.png" alt="Carrito" style="border-bottom: 2px solid #e31b23;">
+                        <div class="contador-carrito" id="contadorCarrito">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="contenedor-central">
+        <div class="titulo-seccion">
+            <h1>Tu Arsenal</h1>
+        </div>
+
+        <div class="layout-carrito">
+            <div class="lista-productos" id="contenedor-items">
+                </div>
+
+            <div class="resumen-orden">
+                <h2>Resumen</h2>
+                <div class="resumen-fila">
+                    <span>Subtotal:</span>
+                    <span id="subtotal-display">$0 MXN</span>
+                </div>
+                <div class="resumen-fila">
+                    <span>Envío:</span>
+                    <span id="envio-display">$0 MXN</span>
+                </div>
+                <div class="resumen-total">
+                    <span>Total:</span>
+                    <span class="total-valor" id="total-display">$0 MXN</span>
+                </div>
+                <button class="btn-pagar" id="btn-completar-pago" style="background-color: #555; pointer-events: none;">Completar Pago</button>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-fondo" id="modalPago">
+        <div class="modal-contenido">
+            <div class="icono-exito">✔</div>
+            <h2>Pago Completado</h2>
+            <p>Has adquirido tus productos correctamente. Tu arsenal ha sido actualizado exitosamente.</p>
+            
+            <div class="modal-detalles-orden">
+                <div class="detalle-fila"><span>Estado:</span> <span style="color: #84d2bd;">Confirmado</span></div>
+                <div class="detalle-fila"><span>Envío:</span> <span style="color: white;">En preparación</span></div>
+            </div>
+
+            <a href="mercancia.html" class="btn-seguir-comprando" id="btn-cerrar-modal">Volver a la Tienda</a>
+        </div>
+    </div>
+
+    <footer style="background-color: #0d0d0d; color: #888; text-align: center; padding: 20px; border-top: 2px solid #ff0000; width: 100%; position: relative; z-index: 10; margin-top: auto;">
+        <p>© 2026 Proyecto Baki creado por NexusHanma. Sin reglas, solo código.</p>
+    </footer>
+
+    <script>
+        // 🛡️ BLOQUEO DE ZOOM
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && (event.key === '+' || event.key === '-' || event.key === '0')) {
+                event.preventDefault();
+            }
+        });
+
+        document.addEventListener('wheel', function(event) {
+            if (event.ctrlKey) { event.preventDefault(); }
+        }, { passive: false });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const contenedorItems = document.getElementById('contenedor-items');
+            const displaySubtotal = document.getElementById('subtotal-display');
+            const displayEnvio = document.getElementById('envio-display');
+            const displayTotal = document.getElementById('total-display');
+            const btnPagar = document.getElementById('btn-completar-pago');
+            const contadorHTML = document.getElementById('contadorCarrito');
+            const modal = document.getElementById('modalPago');
+
+            let carritoItems = JSON.parse(localStorage.getItem('bakiCartItems')) || [];
+
+            function renderizarCarrito() {
+                contenedorItems.innerHTML = ''; 
+                let subtotal = 0;
+
+                // Actualiza el contador
+                if (carritoItems.length > 0) {
+                    contadorHTML.textContent = carritoItems.length;
+                    contadorHTML.classList.add('visible');
+                } else {
+                    contadorHTML.classList.remove('visible');
+                }
+
+                if (carritoItems.length === 0) {
+                    contenedorItems.innerHTML = '<div class="carrito-vacio">Aún no has elegido tu equipamiento.</div>';
+                    displaySubtotal.textContent = `$0 MXN`;
+                    displayEnvio.textContent = `$0 MXN`;
+                    displayTotal.textContent = `$0 MXN`;
+                    btnPagar.style.backgroundColor = '#555';
+                    btnPagar.style.pointerEvents = 'none';
+                    return;
+                }
+
+                // Renderiza los items
+                carritoItems.forEach((item, index) => {
+                    subtotal += item.precio;
+
+                    const itemHTML = `
+                        <div class="item-carrito">
+                            <div class="item-info">
+                                <div class="item-img-contenedor"><img src="${item.img}" alt="Producto"></div>
+                                <div class="item-detalles">
+                                    <h3>${item.titulo}</h3>
+                                    <p>Cantidad: 1</p>
+                                </div>
+                            </div>
+                            <div class="item-precio">$${item.precio} MXN</div>
+                            <button class="btn-eliminar" data-index="${index}" title="Eliminar">✖</button>
+                        </div>
+                    `;
+                    contenedorItems.insertAdjacentHTML('beforeend', itemHTML);
+                });
+
+                // Calcula totales
+                const envio = 250; 
+                displaySubtotal.textContent = `$${subtotal} MXN`;
+                displayEnvio.textContent = `$${envio} MXN`;
+                displayTotal.textContent = `$${subtotal + envio} MXN`;
+                
+                btnPagar.style.backgroundColor = '#e31b23';
+                btnPagar.style.pointerEvents = 'auto';
+
+                asignarBotonesEliminar();
+            }
+
+            function asignarBotonesEliminar() {
+                const botonesEliminar = document.querySelectorAll('.btn-eliminar');
+                botonesEliminar.forEach(boton => {
+                    boton.addEventListener('click', (e) => {
+                        const index = e.target.getAttribute('data-index');
+                        const fila = e.target.closest('.item-carrito');
+                        
+                        fila.style.opacity = '0';
+                        fila.style.transform = 'translateX(-50px)';
+                        
+                        setTimeout(() => {
+                            carritoItems.splice(index, 1); 
+                            localStorage.setItem('bakiCartItems', JSON.stringify(carritoItems)); 
+                            renderizarCarrito(); 
+                        }, 300);
+                    });
+                });
+            }
+
+            renderizarCarrito();
+
+            btnPagar.addEventListener('click', () => {
+                modal.style.display = 'flex';
+                localStorage.removeItem('bakiCartItems'); 
+                carritoItems = [];
+                renderizarCarrito(); // Limpia la pantalla detrás del modal
+            });
+            
+            // Si cambias de pestaña, el carrito se actualiza
+            window.addEventListener('storage', () => {
+                carritoItems = JSON.parse(localStorage.getItem('bakiCartItems')) || [];
+                renderizarCarrito();
+            });
+        });
+    </script>
+</body>
+</html>

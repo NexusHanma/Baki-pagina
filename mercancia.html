@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mercancía - Baki Hanma</title>
+    
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600&display=swap" rel="stylesheet">
+    
+    <style>
+        @font-face {
+            font-family: 'MiFuenteBaki'; 
+            src: url('fonts/Baki-Font.ttf'); 
+        }
+
+        /* === 1. ESTILOS GLOBALES (ANTI-DESBORDAMIENTO) === */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden !important; /* 🛑 ELIMINA EL DESPLAZAMIENTO FANTASMA 🛑 */
+        }
+        
+        body { 
+            background-image: url('img/fondo-baki.png'); 
+            background-size: cover; 
+            background-position: center center; 
+            background-attachment: fixed; 
+            background-color: #050505; 
+            font-family: 'Arial Black', Impact, sans-serif; 
+            color: white; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        main { flex: 1; width: 100%; }
+        
+        .contenedor-central { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 5;}
+        header { padding-top: 30px; } 
+
+        /* === 2. PILARES LATERALES === */
+        .pilar-izq { position: fixed; top: 0; left: 0; height: 100vh; width: 200px; background-image: url('img/pilar-izq.png'); background-size: cover; z-index: -1; }
+        .pilar-der { position: fixed; top: 0; right: 0; height: 100vh; width: 200px; background-image: url('img/pilar-der.png'); background-size: cover; z-index: -1; }
+
+        /* === 3. BARRA DE NAVEGACIÓN === */
+        .barra-roja { 
+            background-color: #000000; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 45px; 
+            border-top: 2px solid white; 
+            border-bottom: 2px solid white; 
+            position: relative; 
+            z-index: 100; 
+        }
+        
+        .caja-logo { position: absolute; left: 10px; top: -25px; width: 100px; height: 80px; display: flex; align-items: center; justify-content: center; }
+        .caja-logo img { max-width: 90%; height: auto; border: 0; }
+        
+        nav ul { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; align-items: center; }
+        nav ul li a { text-decoration: none; color: white; font-size: 20px; text-transform: uppercase; font-family: 'Oswald', sans-serif; font-weight: 500; transition: color 0.3s ease; }
+        nav ul li a:hover { color: #e31b23; }
+        nav ul li:not(:last-child):after { content: "|"; color: white; margin-left: 20px; font-size: 20px; }
+        
+        .caja-iconos { position: absolute; right: 20px; display: flex; gap: 15px; align-items: center; }
+        .caja-iconos img { width: 25px; height: 25px; cursor: pointer; border: 0; }
+
+        /* CARRITO */
+        .carrito-contenedor { position: relative; display: flex; align-items: center; justify-content: center; }
+        .contador-carrito { position: absolute; top: -8px; right: -8px; background-color: #e31b23; color: white; font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid white; opacity: 0; transition: all 0.3s ease; transform: scale(0.5); pointer-events: none; }
+        .contador-carrito.visible { opacity: 1; transform: scale(1); }
+
+        /* === 4. EL CUADRO DE IMAGEN Y SUS ANIMACIONES === */
+        .banner-imagen-contenedor {
+            width: 100%; height: 250px; background-image: url('img/mercancia.png'); background-size: cover; background-position: center center; border: 2px solid #333; border-radius: 10px; margin-top: 50px; margin-bottom: 40px; box-shadow: 0 0 20px rgba(227, 27, 35, 0.3); overflow: hidden; background-color: #000000; border-color: #e31b23; 
+        }
+
+        .revelar-izq { opacity: 0; transform: translateX(-150px); transition: all 1s ease-out; }
+        .revelado-izq { opacity: 1; transform: translateX(0); }
+
+        /* === 5. CINTA ANIMADA === */
+        .cinta-wrapper {
+            background-color: #93032e; overflow: hidden; white-space: nowrap; padding: 0px 0; width: calc(100vw - 420px); position: relative; left: 50%; transform: translateX(-50%); margin-bottom: 40px; display: block; box-sizing: border-box; border-top: 0px solid white; border-bottom: 0px solid white; cursor: pointer;
+        }
+
+        .cinta-track { display: inline-block; white-space: nowrap; animation: loopCinta 25s linear infinite; }
+        .cinta-wrapper:hover .cinta-track { animation-play-state: paused; }
+        .cinta-texto { display: inline-block; font-family: 'Teko', sans-serif; font-size: 60px; color: white; text-transform: uppercase; padding-right: 0px; letter-spacing: 1.5px; }
+
+        @keyframes loopCinta { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* === 6. FILTROS Y GRID DE PRODUCTOS === */
+        .filtros-tienda { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; }
+        .btn-filtro { background: transparent; color: white; border: 2px solid #555; padding: 8px 20px; font-family: 'Oswald', sans-serif; font-size: 16px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; }
+        .btn-filtro:hover, .btn-filtro.activo { border-color: #e31b23; color: #e31b23; }
+
+        .grid-tienda { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-bottom: 60px; }
+
+        .tarjeta-producto { background-color: rgba(0, 0, 0, 0.85); border: 1px solid #333; border-radius: 8px; padding: 15px; position: relative; overflow: hidden; transition: all 0.3s ease; text-align: center; }
+        .tarjeta-producto:hover { border-color: #e31b23; box-shadow: 0 0 15px rgba(227, 27, 35, 0.4); }
+
+        .tarjeta-producto.agregado-animacion { animation: nockoutVisual 0.5s ease-out; border-color: #e31b23; box-shadow: 0 0 25px rgba(227, 27, 35, 0.8); z-index: 10; }
+        @keyframes nockoutVisual { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        .badge-producto { position: absolute; top: 15px; left: 15px; padding: 5px 10px; font-family: 'Oswald', sans-serif; font-size: 12px; text-transform: uppercase; font-weight: bold; z-index: 10; }
+        .badge-nuevo { background-color: #e31b23; color: white; }
+        .badge-agotado { background-color: #555; color: #ccc; }
+        .badge-preorden { background-color: #84d2bd; color: black; }
+
+        .imagen-producto-container { width: 100%; height: 250px; overflow: hidden; position: relative; margin-bottom: 15px; background-color: #111; border-radius: 5px; display: flex; justify-content: center; align-items: center; }
+        .imagen-producto { width: 90%; height: 90%; object-fit: contain; transition: transform 0.4s ease; }
+        .tarjeta-producto:hover .imagen-producto { transform: scale(1.1); }
+
+        .btn-carrito { position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); width: 80%; background-color: #e31b23; color: white; border: none; padding: 10px 0; font-family: 'Oswald', sans-serif; font-size: 16px; text-transform: uppercase; cursor: pointer; transition: bottom 0.3s ease; z-index: 10; }
+        .tarjeta-producto:hover .btn-carrito { bottom: 15px; }
+        .btn-carrito:hover { background-color: white; color: #e31b23; font-weight: bold; }
+        .btn-carrito.agregado { background-color: white !important; color: #e31b23 !important; font-weight: bold; pointer-events: none; }
+
+        .titulo-producto { font-family: 'Oswald', sans-serif; font-size: 20px; color: white; margin-bottom: 5px; text-transform: uppercase; }
+        .precio-producto { font-family: 'Arial', sans-serif; font-size: 18px; color: #84d2bd; font-weight: bold; }
+        .precio-original { text-decoration: line-through; color: #666; font-size: 14px; margin-right: 5px; }
+
+        /* =======================================================
+           🥊 MODO CELULAR (NUEVA ESTRUCTURA INFALIBLE) 🥊
+           ======================================================= */
+        @media (max-width: 900px) { .grid-tienda { grid-template-columns: repeat(2, 1fr); } }
+        
+        @media (max-width: 768px) { 
+            .pilar-izq, .pilar-der { display: none; } 
+            
+            /* === NAVEGACIÓN MÓVIL EXACTA (TAMAÑO PERSONAJES) === */
+            .barra-roja { flex-direction: column; height: auto; padding: 8px 0; gap: 5px; }
+            .caja-logo { position: relative; top: 0; left: 0; height: auto; margin-bottom: 2px;}
+            .caja-logo img { width: 60px; height: auto; } 
+            nav ul { flex-wrap: wrap; justify-content: center; gap: 2px 15px; padding: 0 5px; }
+            nav ul li a { font-size: 12px; background-color: transparent; padding: 2px 0; border: none; display: inline-block; letter-spacing: 0.5px; color: #ddd; }
+            nav ul li:not(:last-child):after { display: none; }
+            .caja-iconos { position: relative; right: 0; margin-top: 2px; gap: 20px; }
+            .caja-iconos img { width: 22px; height: 22px; }
+            
+            /* Iconos Centrados Abajo del menú */
+            .caja-iconos { position: relative; right: auto; margin-top: 5px; gap: 20px; justify-content: center; width: 100%; }
+
+            /* 🛑 CORRECCIÓN DEL BANNER CORTADO 🛑 */
+            .banner-imagen-contenedor { 
+                height: 150px; 
+                margin-top: 20px; 
+                border-radius: 8px; 
+                transform: translateX(0) !important; /* Desactiva la animación lateral en móvil */
+                opacity: 1 !important; 
+            }
+            
+            /* Cinta contenida estrictamente */
+            .cinta-wrapper { width: 100% !important; max-width: 100%; left: 0 !important; transform: none !important; border-radius: 5px; }
+            .cinta-texto { font-size: 30px; } 
+
+            .filtros-tienda { flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 30px; } 
+            .btn-filtro { font-size: 13px; padding: 6px 12px; }
+
+            /* 🎯 EL SECRETO DEFINITIVO PARA CENTRAR EN CELULAR 🎯 */
+            .grid-tienda { 
+                display: block; /* Apaga el Grid problemático */
+                width: 100%;
+            } 
+            
+            .tarjeta-producto { 
+                display: block;
+                width: 90%; /* Ocupa el 90% de la pantalla */
+                max-width: 320px; /* Pero nunca se estira más de esto */
+                margin: 0 auto 30px auto; /* 0 arriba, AUTO a los lados (CENTRA), 30px abajo */
+                padding-bottom: 60px; /* Espacio para el botón permanente */
+            }
+            
+            .btn-carrito { 
+                bottom: 15px; 
+                width: 85%; 
+                left: 50%;
+                transform: translateX(-50%); /* Centra el botón exactamente a la mitad de la tarjeta */
+            } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pilar-izq"></div>
+    <div class="pilar-der"></div>
+
+    <header>
+        <div class="contenedor-central">
+            <div class="barra-roja">
+                <div class="caja-logo"><img src="img/logo.png" alt="Logo"></div> 
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="personajes.html">Personajes</a></li>
+                        <li><a href="historia.html">Historia</a></li>
+                        <li><a href="mercancia.html" style="color: #e31b23;">Mercancía</a></li>
+                        <li><a href="Peleas.html">Peleas Memorables</a></li>
+                    </ul>
+                </nav>
+                <div class="caja-iconos">
+                    <a href="perfil.html"><img src="img/icono-perfil.png" alt="Perfil"></a>
+                    <div class="carrito-contenedor">
+                        <a href="carrito.html"><img src="img/icono-carrito.png" alt="Carrito"></a>
+                        <div class="contador-carrito" id="contadorCarrito">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="contenedor-central">
+
+        <div class="banner-imagen-contenedor revelar-izq"></div>
+
+        <div class="cinta-wrapper">
+            <div class="cinta-track">
+                <span class="cinta-texto">BAKI HANMA • BAKI HANMA • BAKI HANMA • BAKI HANMA • BAKI HANMA •  BAKI HANMA • BAKI HANMA • BAKI HANMA • BAKI HANMA • </span>
+                <span class="cinta-texto">BAKI HANMA • BAKI HANMA • BAKI HANMA • BAKI HANMA • BAKI HANMA • BAKI HANMA • BAKI HANMA • BAKI HANMA • BAKI HANMA • </span>
+            </div>
+        </div>
+
+        <div class="filtros-tienda">
+            <button class="btn-filtro activo" data-filtro="todos">Todos</button>
+            <button class="btn-filtro" data-filtro="ropa">Ropa</button>
+            <button class="btn-filtro" data-filtro="figuras">Figuras</button>
+            <button class="btn-filtro" data-filtro="accesorios">Accesorios</button>
+        </div>
+
+        <div class="grid-tienda">
+            <div class="tarjeta-producto" data-categoria="ropa">
+                <span class="badge-producto badge-nuevo">Nuevo</span>
+              <div class="imagen-producto-container">
+                <img src="img/merch-playera-baki.png" alt="Playera Demon Back" class="imagen-producto">
+                    <button class="btn-carrito">Añadir al Carrito</button>
+                </div>
+              <h3 class="titulo-producto">Playera BAKI HANMA</h3>
+                <p class="precio-producto">$621 MXN</p>
+            </div>
+
+            <div class="tarjeta-producto" data-categoria="figuras">
+                <span class="badge-producto badge-preorden">Pre-Orden</span>
+                <div class="imagen-producto-container">
+                  <img src="img/merch-figura-baki.png" alt="Figura Baki Hanma" class="imagen-producto">
+                    <button class="btn-carrito">Pre-Ordenar</button>
+                </div>
+              <h3 class="titulo-producto">Figura Baki Articulada</h3>
+                <p class="precio-producto">$1509 MXN</p>
+            </div>
+
+            <div class="tarjeta-producto" data-categoria="ropa">
+              <div class="imagen-producto-container">
+                <img src="img/merch-yujiro-baki.png" alt="Sudadera Shinshinkai" class="imagen-producto">
+                    <button class="btn-carrito">Añadir al Carrito</button>
+                </div>
+              <h3 class="titulo-producto">PLAYERA BAKI X YUJIRO</h3>
+                <p class="precio-producto"><span class="precio-original">$700.00</span> &nbsp;$499 MXN</p>
+            </div>
+
+            <div class="tarjeta-producto" data-categoria="figuras">
+                <span class="badge-producto badge-agotado">Agotado</span>
+                <div class="imagen-producto-container">
+                  <img src="img/merch-figura-yujiro.png" alt="Figura Yujiro Hanma" class="imagen-producto" style="filter: grayscale(100%); opacity: 0.5;">
+                    <button class="btn-carrito" style="background-color: #555; cursor: not-allowed;">Sin Stock</button>
+                </div>
+              <h3 class="titulo-producto" style="color: #888;">Figura Yujiro "Ogro"</h3>
+                <p class="precio-producto" style="color: #555;">$1687 MXN</p>
+            </div>
+
+            <div class="tarjeta-producto" data-categoria="accesorios">
+                <div class="imagen-producto-container">
+                  <img src="img/merch-llaveros.png" alt="Llaveros Baki y Yujiro" class="imagen-producto">
+                    <button class="btn-carrito">Añadir al Carrito</button>
+                </div>
+              <h3 class="titulo-producto">Llaveros Baki y Yujiro</h3>
+                <p class="precio-producto">$120 MXN</p>
+            </div>
+
+            <div class="tarjeta-producto" data-categoria="accesorios">
+                <span class="badge-producto badge-nuevo">Nuevo</span>
+              <div class="imagen-producto-container">
+                <img src="img/merch-poster.png" alt="Póster Torneo Máximo" class="imagen-producto">
+                    <button class="btn-carrito">Añadir al Carrito</button>
+                </div>
+                <h3 class="titulo-producto">Póster baki hanma</h3>
+                <p class="precio-producto">$100 MXN</p>
+            </div>
+
+            <div class="tarjeta-producto" data-categoria="ropa">
+                <div class="imagen-producto-container">
+                  <img src="img/merch-shorts-baki.png" alt="Shorts de Combate Baki" class="imagen-producto">
+                    <button class="btn-carrito">Añadir al Carrito</button>
+                </div>
+              <h3 class="titulo-producto">Shorts de Combate Baki</h3>
+                <p class="precio-producto">$799 MXN</p>
+            </div>
+
+            <div class="tarjeta-producto" data-categoria="accesorios">
+              <div class="imagen-producto-container">
+                <img src="img/merch-funda.png" alt="Funda Baki Hanma" class="imagen-producto">
+                    <button class="btn-carrito">Añadir al Carrito</button>
+                </div>
+                <h3 class="titulo-producto">Funda baki hanma</h3>
+                <p class="precio-producto">$120 MXN</p>
+            </div>
+        </div>
+    </main>
+
+    <footer style="background-color: #0d0d0d; color: #888; text-align: center; padding: 20px; border-top: 2px solid #ff0000; width: 100%; position: relative; z-index: 10; margin-top: auto;">
+        <p>© 2026 Proyecto Baki creado por NexusHanma. Sin reglas, solo código.</p>
+    </footer>
+
+    <script>
+    // 🛡️ BLOQUEO DE ZOOM
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && (event.key === '+' || event.key === '-' || event.key === '0')) {
+            event.preventDefault();
+        }
+    });
+
+    document.addEventListener('wheel', function(event) {
+        if (event.ctrlKey) { event.preventDefault(); }
+    }, { passive: false });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- 1. Lógica de Animación ---
+        const observador = new IntersectionObserver((entradas) => {
+            entradas.forEach(entrada => {
+                if (entrada.isIntersecting) { entrada.target.classList.add('revelado-izq'); } 
+                else { entrada.target.classList.remove('revelado-izq'); }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.revelar-izq').forEach(el => observador.observe(el));
+
+        // --- 2. Lógica de Filtrado ---
+        const botonesFiltro = document.querySelectorAll('.btn-filtro');
+        const productos = document.querySelectorAll('.tarjeta-producto');
+
+        botonesFiltro.forEach(boton => {
+            boton.addEventListener('click', () => {
+                botonesFiltro.forEach(btn => btn.classList.remove('activo'));
+                boton.classList.add('activo');
+                const filtro = boton.getAttribute('data-filtro');
+
+                productos.forEach(producto => {
+                    const categoria = producto.getAttribute('data-categoria');
+                    if (filtro === 'todos' || filtro === categoria) {
+                        producto.style.display = 'block';
+                        setTimeout(() => {
+                            producto.style.opacity = '1';
+                            producto.style.transform = 'scale(1)';
+                        }, 10);
+                    } else {
+                        producto.style.opacity = '0';
+                        producto.style.transform = 'scale(0.8)';
+                        setTimeout(() => {
+                            producto.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        });
+
+        // --- 3. LÓGICA DEL CARRITO ---
+        const contadorHTML = document.getElementById('contadorCarrito');
+        const botonesCarrito = document.querySelectorAll('.btn-carrito');
+        let carritoItems = JSON.parse(localStorage.getItem('bakiCartItems')) || [];
+        
+        const actualizarInterfazContador = (cantidad) => {
+            if (cantidad > 0) {
+                contadorHTML.textContent = cantidad;
+                contadorHTML.classList.add('visible');
+            } else {
+                contadorHTML.classList.remove('visible');
+            }
+        };
+
+        actualizarInterfazContador(carritoItems.length);
+
+        botonesCarrito.forEach(boton => {
+            boton.addEventListener('click', (e) => {
+                if (boton.textContent === 'Sin Stock') return;
+
+                const tarjeta = boton.closest('.tarjeta-producto');
+                const textoOriginal = boton.textContent;
+
+                const imgSrc = tarjeta.querySelector('.imagen-producto').getAttribute('src');
+                const titulo = tarjeta.querySelector('.titulo-producto').textContent;
+                let precioHTML = tarjeta.querySelector('.precio-producto').innerHTML;
+                precioHTML = precioHTML.replace(/<span.*<\/span>/, ''); 
+                const precioLimpio = parseInt(precioHTML.replace(/[^0-9]/g, '')); 
+
+                const nuevoItem = { id: Date.now(), img: imgSrc, titulo: titulo, precio: precioLimpio };
+                carritoItems.push(nuevoItem);
+                localStorage.setItem('bakiCartItems', JSON.stringify(carritoItems));
+
+                tarjeta.classList.add('agregado-animacion');
+                boton.textContent = '¡AGREGADO!';
+                boton.classList.add('agregado');
+
+                actualizarInterfazContador(carritoItems.length);
+
+                setTimeout(() => {
+                    tarjeta.classList.remove('agregado-animacion');
+                    boton.textContent = textoOriginal;
+                    boton.classList.remove('agregado');
+                }, 1000); 
+            });
+        });
+        
+        window.addEventListener('storage', () => {
+            carritoItems = JSON.parse(localStorage.getItem('bakiCartItems')) || [];
+            actualizarInterfazContador(carritoItems.length);
+        });
+    });
+    </script>
+</body>
+</html>
